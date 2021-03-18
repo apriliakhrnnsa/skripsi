@@ -4,7 +4,7 @@ from skimage.io import imread, imshow
 import matplotlib.pyplot as plt
 import os
 
-path = 'C:/Users/APRIL/PycharmProjects/pythonProject1/luka_campur/31.jpg'
+path = 'C:/Users/APRIL/PycharmProjects/skripsi-april/luka_campur/31.jpg'
 
 image = imread(os.path.join(os.path.dirname(__file__), path), as_gray=False)
 height, width, channel = image.shape
