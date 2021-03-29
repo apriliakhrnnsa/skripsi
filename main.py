@@ -67,11 +67,11 @@ for i in range(height):
             y_ = y/y_n
             z_ = z/z_n
 
-            def t(s):
-                if s > 0.008856 :
+            def t(s) :
+                if s > (6/29)**3 :
                     return s**(1/3)
                 else :
-                    return (7.787037)*s + 16/116
+                    return (1/3)*((29/6)**2)*s + 16/116
 
             fx = t(x_)
             fy = t(y_)
