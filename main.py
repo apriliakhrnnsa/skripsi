@@ -86,16 +86,35 @@ for i in range(height):
             image_lab.itemset((i, j, 1), float(a))
             image_lab.itemset((i, j, 2), float(b))
 
-#plt.subplot(121), imshow(image)
+mean1 = np.mean(image_lab1) #Mean citra LAB dengan rumus
+mean2 = np.mean(image_lab2) #Mean citra LAB dari skimage
+
+vars1 = np.var(image_lab1) #Varian citra LAB dengan rumus
+vars2 = np.var(image_lab2) #Varian citra LAB dari skimage
+
+print('Mean LAB Manual: ', mean1)
+print('Mean LAB skimage: ', mean2)
+
+print('Varian LAB Manual: ', vars1)
+print('Varian LAB skimage: ', vars2)
+
+#plt.title('Citra Asli', size=5)
+plt.subplot(1,3,1), imshow(image)
 #print(image.shape)
 #print(image)
 
-plt.subplot(121), imshow(image_xyz)
-print(image_xyz.shape)
-print(image_xyz)
+#plt.subplot(1,3,2), imshow(image_xyz)
+#print(image_xyz.shape)
+#print(image_xyz)
 
-plt.subplot(122), imshow(image_lab)
-print(image_lab.shape)
-print(image_lab)
+#plt.title('LAB Manual', size=5)
+plt.subplot(1,3,2), imshow(image_lab1)
+print(image_lab1.shape)
+#print(image_lab1)
+
+#plt.title('LAB skimage', size=5)
+plt.subplot(1,3,3), imshow(image_lab2)
+print(image_lab1.shape)
+#print(image_lab2)
 
 plt.show()
