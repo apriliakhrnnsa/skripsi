@@ -2,6 +2,7 @@ import numpy as np
 from skimage.color import rgb2xyz, convert_colorspace, xyz2lab, rgb2lab
 from skimage.io import imread, imshow
 import matplotlib.pyplot as plt
+from skimage.util import compare_images
 import os
 
 #path = 'C:/Users/APRIL/PycharmProjects/skripsi-april/luka_hitam/1.jpg'
@@ -11,10 +12,12 @@ image = imread('../skripsi-april/luka_hitam/1.jpg', as_gray=False)
 height, width, channel = image.shape
 
 image_xyz = np.empty((height,width,channel))
-image_lab = np.empty((height,width,channel))
+image_lab1 = np.empty((height,width,channel)) #Citra LAB dengan rumus dari buku
+
+mask = imread('../skripsi-april/luka_hitam/1_region.jpg', as_gray=False)
 
 #image_xyz = rgb2xyz(image)
-#image_lab = rgb2lab(image)
+image_lab2 = rgb2lab(image, illuminant='D65', observer='2') #Citra LAB langsung dari skimage
 
 for i in range(height):
     for j in range(width):
@@ -67,7 +70,7 @@ for i in range(height):
             y_ = y/y_n
             z_ = z/z_n
 
-            def t(s) :
+            def t(s):
                 if s > (6/29)**3 :
                     return s**(1/3)
                 else :
@@ -82,9 +85,16 @@ for i in range(height):
             b = 200*(fy - fz)
 
 #           untuk mengeset nilai LAB ke gambar
-            image_lab.itemset((i, j, 0), float(L))
-            image_lab.itemset((i, j, 1), float(a))
-            image_lab.itemset((i, j, 2), float(b))
+            image_lab1.itemset((i, j, 0), float(L))
+            image_lab1.itemset((i, j, 1), float(a))
+            image_lab1.itemset((i, j, 2), float(b))
+
+#            alpha = 0.5
+
+#            result = Image.blend_rotated(image_lab1, mask)
+#            result.save("mask.png", "PNG")
+
+blend_rotated = compare_images(mask, image_lab1, method='blend')
 
 mean1 = np.mean(image_lab1) #Mean citra LAB dengan rumus
 mean2 = np.mean(image_lab2) #Mean citra LAB dari skimage
@@ -98,23 +108,32 @@ print('Mean LAB skimage: ', mean2)
 print('Varian LAB Manual: ', vars1)
 print('Varian LAB skimage: ', vars2)
 
-#plt.title('Citra Asli', size=5)
-plt.subplot(1,3,1), imshow(image)
-#print(image.shape)
+#fig = plt.figure()
+#ax1 = fig.add_subplot(131), imshow(image)
+#ax2 = fig.add_subplot(132), imshow(image_lab1)
+#ax3 = fig.add_subplot(133), imshow(image_lab2)
+#ax3 = fig.add_subplot(133), imshow(dst)
+
+plt.subplot(221), imshow(image)
+#plt.title('Citra Asli', size=10)
+print('Citra Asli: ',image.shape)
 #print(image)
+
+plt.subplot(222), imshow(image_lab1)
+#plt.title('LAB Manual', size=10)
+print('LAB Manual: ', image_lab1.shape)
+#print(image_lab1)
+
+plt.subplot(223), imshow(image_lab2)
+#plt.title('LAB skimage', size=10)
+print('LAB skimage: ', image_lab2.shape)
+#print(mask)
+
+plt.subplot(224), imshow(blend_rotated)
+print('Mask: ', mask.shape)
 
 #plt.subplot(1,3,2), imshow(image_xyz)
 #print(image_xyz.shape)
 #print(image_xyz)
-
-#plt.title('LAB Manual', size=5)
-plt.subplot(1,3,2), imshow(image_lab1)
-print(image_lab1.shape)
-#print(image_lab1)
-
-#plt.title('LAB skimage', size=5)
-plt.subplot(1,3,3), imshow(image_lab2)
-print(image_lab1.shape)
-#print(image_lab2)
 
 plt.show()
