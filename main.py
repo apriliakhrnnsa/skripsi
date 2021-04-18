@@ -1,9 +1,11 @@
+import cv2
 import numpy as np
 from skimage.color import rgb2xyz, convert_colorspace, xyz2lab, rgb2lab
 from skimage.io import imread, imshow
 import matplotlib.pyplot as plt
+from skimage.transform import resize
 from skimage.util import compare_images
-import os
+from sklearn.cluster import KMeans
 
 #path = 'C:/Users/APRIL/PycharmProjects/skripsi-april/luka_hitam/1.jpg'
 #image = imread(os.path.join(os.path.dirname(__file__), path), as_gray=False)
@@ -14,17 +16,23 @@ height, width, channel = image.shape
 image_xyz = np.empty((height,width,channel))
 image_lab1 = np.empty((height,width,channel)) #Citra LAB dengan rumus dari buku
 
-mask = imread('../skripsi-april/luka_hitam/1_region.jpg', as_gray=False)
+mask = imread('../skripsi-april/luka_hitam/1_region.png', as_gray=True)
 
 #image_xyz = rgb2xyz(image)
-image_lab2 = rgb2lab(image, illuminant='D65', observer='2') #Citra LAB langsung dari skimage
+#image_lab2 = rgb2lab(image, illuminant='D65', observer='2') #Citra LAB langsung dari skimage
+
+#result = Image.blend(mask, image_lab1, alpha=0.5)
+mask_resize = resize(mask, (height, width, 3))
+
+hasil1 = compare_images(mask_resize, image, method='blend') #hasil overlay mask dengan LAB Manual
+#hasil2 = compare_images(mask_resize, image_lab2, method='blend') #hasil overlay mask dengan LAB skimage
 
 for i in range(height):
     for j in range(width):
         for k in range(channel):
-            R = image.item(i,j,0)
-            G = image.item(i,j,1)
-            B = image.item(i,j,2)
+            R = hasil1.item(i,j,0)
+            G = hasil1.item(i,j,1)
+            B = hasil1.item(i,j,2)
 
 #           Rumus RGB ke XYZ dari buku
             X = (R*0.49000 + G*0.31000 + B*0.20000)/0.17697
@@ -89,51 +97,62 @@ for i in range(height):
             image_lab1.itemset((i, j, 1), float(a))
             image_lab1.itemset((i, j, 2), float(b))
 
-#            alpha = 0.5
+#            RGB = np.array([r_, g_, b_])
 
-#            result = Image.blend_rotated(image_lab1, mask)
-#            result.save("mask.png", "PNG")
+#            M = np.array([[0.4124,  0.3576, 0,1805],
+#                 [0.2126, 0.7152, 0.0722],
+#                 [0.0193, 0.1192, 0.9506]])
 
-blend_rotated = compare_images(mask, image_lab1, method='blend')
+#            XYZ = RGB * M
+
+#            for x in range(0, len(RGB)):
+#                baris = []
+#                for y in range(0, len(RGB[0])):
+#                    total = 0
+#                    for z in range(0, len(RGB)):
+#                        hasil = total + (RGB[x][z] * M[z][y])
+#                    baris.append(hasil)
+#                XYZ.append(baris)
+
+#            for x in range(0, len(XYZ)):
+#                for y in range(0, len(XYZ[0])):
+#                    print(XYZ[x][y], end = '')
+#                print()
+
+#k-means
+img_n = image_lab1.reshape(image_lab1.shape[0]*image_lab1.shape[1], image_lab1.shape[2])
+print('LAB reshape: ', img_n.shape)
+
+kmeans = KMeans(n_clusters=3, random_state=0).fit(img_n)
+img_km = kmeans.cluster_centers_[kmeans.labels_]
+
+img_cluster = img_km.reshape(image_lab1.shape[0], image_lab1.shape[1], image_lab1.shape[2])
 
 mean1 = np.mean(image_lab1) #Mean citra LAB dengan rumus
-mean2 = np.mean(image_lab2) #Mean citra LAB dari skimage
+#mean2 = np.mean(image_lab2) #Mean citra LAB dari skimage
 
 vars1 = np.var(image_lab1) #Varian citra LAB dengan rumus
-vars2 = np.var(image_lab2) #Varian citra LAB dari skimage
+#vars2 = np.var(image_lab2) #Varian citra LAB dari skimage
 
 print('Mean LAB Manual: ', mean1)
-print('Mean LAB skimage: ', mean2)
+#print('Mean LAB skimage: ', mean2)
 
 print('Varian LAB Manual: ', vars1)
-print('Varian LAB skimage: ', vars2)
+#print('Varian LAB skimage: ', vars2)
 
-#fig = plt.figure()
+fig = plt.figure()
 #ax1 = fig.add_subplot(131), imshow(image)
-#ax2 = fig.add_subplot(132), imshow(image_lab1)
-#ax3 = fig.add_subplot(133), imshow(image_lab2)
-#ax3 = fig.add_subplot(133), imshow(dst)
+ax1 = fig.add_subplot(221), imshow(image_lab1)
+ax2 = fig.add_subplot(222), imshow(img_cluster)
+ax3 = fig.add_subplot(223), imshow(hasil1)
+ax4 = fig.add_subplot(224), imshow(image)
 
-plt.subplot(221), imshow(image)
-#plt.title('Citra Asli', size=10)
 print('Citra Asli: ',image.shape)
 #print(image)
 
-plt.subplot(222), imshow(image_lab1)
-#plt.title('LAB Manual', size=10)
 print('LAB Manual: ', image_lab1.shape)
 #print(image_lab1)
 
-plt.subplot(223), imshow(image_lab2)
-#plt.title('LAB skimage', size=10)
-print('LAB skimage: ', image_lab2.shape)
-#print(mask)
-
-plt.subplot(224), imshow(blend_rotated)
-print('Mask: ', mask.shape)
-
-#plt.subplot(1,3,2), imshow(image_xyz)
-#print(image_xyz.shape)
-#print(image_xyz)
+print('Mask: ', mask_resize.shape)
 
 plt.show()
