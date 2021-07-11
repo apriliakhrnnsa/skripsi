@@ -156,3 +156,61 @@ print('LAB Manual: ', image_lab1.shape)
 print('Mask: ', mask_resize.shape)
 
 plt.show()
+
+#k-means tanpa pakai sklearn
+X = image
+
+#X = np.array([[[124, 147, 137], [117, 140, 130], [109, 132, 126]],
+#			  [[106, 119, 128], [104, 117, 126], [103, 116, 125]],
+#			  [[120, 143, 133], [112, 135, 127], [101, 114, 123]],
+#			  [[155, 157, 144], [125, 136, 140], [121, 132, 136]],
+#			  [[130, 153, 143], [122, 133, 137], [152, 154, 141]]])
+
+print(X.shape)
+#print(X.sum(axis=1))
+
+class Kmeans:
+	def __init__(self, K, max_iter=500):
+		self.K = K
+		self.max_iter = max_iter
+
+#	untuk menghitung centroid baru (update centroid)
+	def compute_centroids(self, X, labels):
+		centroids = np.zeros((self.K, X.shape[2]))
+		for k in range(self.K):
+			centroids[k, :] = np.mean(X[labels == k, :], axis=0)
+		return centroids
+
+#	untuk menghitung jarak dari tiap data ke tiap centroid
+	def compute_distance(self, X, centroids):
+		D = np.zeros((X.shape[0], X.shape[1], self.K))
+		for k in range(self.K):
+			dist = np.linalg.norm(X - centroids[k, :], axis=2)
+			D[:, :, k] = np.square(dist)
+			#print(D.shape)
+			print(D)
+		return D
+
+#	untuk mencari jarak terdekat
+	def find_closest_cluster(self, D):
+		a = np.argmin(D, axis=2)
+		#print(a)
+		return a
+
+	def fit(self, X):
+		self.centroids = np.array([[255, 0, 0], [255, 255, 0], [0, 0, 0]])
+		print(self.centroids.shape)
+		for i in range(self.max_iter):
+			old_centroids = self.centroids
+			distance = self.compute_distance(X, old_centroids)
+			self.labels = self.find_closest_cluster(distance)
+			self.centroids = self.compute_centroids(X, self.labels)
+
+			if np.all(old_centroids == self.centroids):
+				break
+
+
+kmeans = Kmeans(K=3, max_iter=500)
+kmeans.fit(X)
+centroids = kmeans.centroids
+#kmeans.predict(X)
